@@ -236,15 +236,29 @@ Resources:
               - 'sts:AssumeRole'
       ManagedPolicyArns:
         - !Ref LambdaEventPolicy
+  CFNSagemakerLifeCyclePolicy:
+    Type: AWS::SageMaker::NotebookInstanceLifecycleConfig
+    Properties:
+        NotebookInstanceLifecycleConfigName: sagemaker-clarify-blog
+        OnStart: 
+        - Content:
+            Fn::Base64:
+                !Sub |
+                #!/bin/bash
+                sudo -u ec2-user -i <<'EOF'
+                cd /home/ec2-user/SageMaker
+                git clone https://github.com/aws-samples/amazon-sagemaker-clarify-with-sklearn.git
+                EOF
   CFNSagemakerNotebook:
     Type: AWS::SageMaker::NotebookInstance
     Properties:
       DirectInternetAccess: Enabled
-      InstanceType: ml.t2.medium
+      InstanceType: ml.t3.medium
+      LifecycleConfigName: sagemaker-clarify-blog
       NotebookInstanceName: sagemaker-clarify-stepfunctions-demo
       RoleArn: !GetAtt SagemakerRole.Arn
       RootAccess: Enabled
-      VolumeSizeInGB: 10
+      VolumeSizeInGB: 5
   WriteConfig:
     Type: AWS::Lambda::Function
     Properties:
